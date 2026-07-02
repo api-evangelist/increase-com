@@ -1,0 +1,319 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Increase API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{apiKey}}"
+    }
+  },
+  "items": [
+    {
+      "info": { "name": "Accounts", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "List Accounts.", "type": "http" },
+          "http": { "method": "GET", "url": "https://api.increase.com/accounts" },
+          "docs": "Lists deposit Accounts held at Increase partner banks."
+        },
+        {
+          "info": { "name": "Create an Account.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/accounts",
+            "body": { "type": "json", "data": "{\n  \"name\": \"Operating Account\",\n  \"entity_id\": \"entity_id\"\n}" }
+          },
+          "docs": "Creates a new deposit Account."
+        },
+        {
+          "info": { "name": "Retrieve an Account.", "type": "http" },
+          "http": {
+            "method": "GET",
+            "url": "https://api.increase.com/accounts/:account_id",
+            "params": [ { "name": "account_id", "value": "", "type": "path", "description": "The identifier of the Account." } ]
+          },
+          "docs": "Retrieves an Account by ID."
+        },
+        {
+          "info": { "name": "Retrieve an Account Balance.", "type": "http" },
+          "http": {
+            "method": "GET",
+            "url": "https://api.increase.com/accounts/:account_id/balance",
+            "params": [ { "name": "account_id", "value": "", "type": "path", "description": "The identifier of the Account." } ]
+          },
+          "docs": "Returns the current and available balance for an Account."
+        },
+        {
+          "info": { "name": "Close an Account.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/accounts/:account_id/close",
+            "params": [ { "name": "account_id", "value": "", "type": "path", "description": "The identifier of the Account." } ]
+          },
+          "docs": "Closes an Account."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Account Numbers", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "List Account Numbers.", "type": "http" },
+          "http": { "method": "GET", "url": "https://api.increase.com/account_numbers" },
+          "docs": "Lists Account Numbers that can receive ACH, wire, and check deposits."
+        },
+        {
+          "info": { "name": "Create an Account Number.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/account_numbers",
+            "body": { "type": "json", "data": "{\n  \"account_id\": \"account_id\",\n  \"name\": \"Receivables\"\n}" }
+          },
+          "docs": "Creates a new Account Number for an Account."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Cards", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "List Cards.", "type": "http" },
+          "http": { "method": "GET", "url": "https://api.increase.com/cards" },
+          "docs": "Lists issued virtual and physical Cards."
+        },
+        {
+          "info": { "name": "Create a Card.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/cards",
+            "body": { "type": "json", "data": "{\n  \"account_id\": \"account_id\",\n  \"description\": \"Employee card\"\n}" }
+          },
+          "docs": "Issues a new Card on an Account."
+        },
+        {
+          "info": { "name": "Retrieve sensitive Card details.", "type": "http" },
+          "http": {
+            "method": "GET",
+            "url": "https://api.increase.com/cards/:card_id/details",
+            "params": [ { "name": "card_id", "value": "", "type": "path", "description": "The identifier of the Card." } ]
+          },
+          "docs": "Returns the PAN, expiration, and CVC for a Card."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Card Payments", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "List Card Payments.", "type": "http" },
+          "http": { "method": "GET", "url": "https://api.increase.com/card_payments" },
+          "docs": "Lists card authorization/settlement lifecycles."
+        },
+        {
+          "info": { "name": "Action a Real-Time Decision.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/real_time_decisions/:real_time_decision_id/action",
+            "params": [ { "name": "real_time_decision_id", "value": "", "type": "path", "description": "The identifier of the Real-Time Decision." } ],
+            "body": { "type": "json", "data": "{\n  \"card_authorization\": { \"decision\": \"approve\" }\n}" }
+          },
+          "docs": "Approves or declines a card authorization in real time."
+        }
+      ]
+    },
+    {
+      "info": { "name": "ACH Transfers", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create an ACH Transfer.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/ach_transfers",
+            "body": { "type": "json", "data": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 1000,\n  \"statement_descriptor\": \"Invoice 123\",\n  \"external_account_id\": \"external_account_id\"\n}" }
+          },
+          "docs": "Originates an ACH credit or debit transfer over FedACH."
+        },
+        {
+          "info": { "name": "Approve an ACH Transfer.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/ach_transfers/:ach_transfer_id/approve",
+            "params": [ { "name": "ach_transfer_id", "value": "", "type": "path", "description": "The identifier of the ACH Transfer." } ]
+          },
+          "docs": "Approves a pending ACH Transfer."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Wire Transfers", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create a Wire Transfer.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/wire_transfers",
+            "body": { "type": "json", "data": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 100000,\n  \"message_to_recipient\": \"Wire for services\",\n  \"external_account_id\": \"external_account_id\"\n}" }
+          },
+          "docs": "Sends a domestic Fedwire Wire Transfer."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Real-Time Payments", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create a Real-Time Payments Transfer.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/real_time_payments_transfers",
+            "body": { "type": "json", "data": "{\n  \"source_account_number_id\": \"account_number_id\",\n  \"amount\": 2500,\n  \"creditor_name\": \"Jane Doe\",\n  \"remittance_information\": \"Payout\",\n  \"external_account_id\": \"external_account_id\"\n}" }
+          },
+          "docs": "Sends an instant RTP transfer."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Check Transfers", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create a Check Transfer.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/check_transfers",
+            "body": { "type": "json", "data": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 5000,\n  \"fulfillment_method\": \"physical_check\"\n}" }
+          },
+          "docs": "Prints and mails a physical check."
+        },
+        {
+          "info": { "name": "Create a Check Deposit.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/check_deposits",
+            "body": { "type": "json", "data": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 5000,\n  \"front_image_file_id\": \"file_id\",\n  \"back_image_file_id\": \"file_id\"\n}" }
+          },
+          "docs": "Deposits images of a received check."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Transactions", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "List Transactions.", "type": "http" },
+          "http": {
+            "method": "GET",
+            "url": "https://api.increase.com/transactions?account_id=account_id",
+            "params": [ { "name": "account_id", "value": "account_id", "type": "query", "description": "Filter by Account." } ]
+          },
+          "docs": "Lists settled Transactions for an Account."
+        },
+        {
+          "info": { "name": "Retrieve a Transaction.", "type": "http" },
+          "http": {
+            "method": "GET",
+            "url": "https://api.increase.com/transactions/:transaction_id",
+            "params": [ { "name": "transaction_id", "value": "", "type": "path", "description": "The identifier of the Transaction." } ]
+          },
+          "docs": "Retrieves a Transaction with its typed source object."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Entities", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create an Entity.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/entities",
+            "body": { "type": "json", "data": "{\n  \"structure\": \"corporation\",\n  \"corporation\": {}\n}" }
+          },
+          "docs": "Creates a KYC/KYB Entity that can own Accounts."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Events", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "List Events.", "type": "http" },
+          "http": { "method": "GET", "url": "https://api.increase.com/events" },
+          "docs": "Lists Events (up to 30 days) for polling or webhook backfill."
+        },
+        {
+          "info": { "name": "Create an Event Subscription.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/event_subscriptions",
+            "body": { "type": "json", "data": "{\n  \"url\": \"https://example.com/webhooks/increase\"\n}" }
+          },
+          "docs": "Registers an HTTPS endpoint to receive signed webhooks."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Bookkeeping", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create a Bookkeeping Account.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/bookkeeping_accounts",
+            "body": { "type": "json", "data": "{\n  \"name\": \"Customer Ledger\",\n  \"compliance_category\": \"customer_balance\"\n}" }
+          },
+          "docs": "Creates a Bookkeeping Account in the sub-ledger."
+        },
+        {
+          "info": { "name": "Create a Bookkeeping Entry Set.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/bookkeeping_entry_sets",
+            "body": { "type": "json", "data": "{\n  \"entries\": [\n    { \"account_id\": \"bookkeeping_account_a\", \"amount\": 1000 },\n    { \"account_id\": \"bookkeeping_account_b\", \"amount\": -1000 }\n  ]\n}" }
+          },
+          "docs": "Posts a balanced double-entry set transactionally."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Lockboxes", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Create a Lockbox.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/lockboxes",
+            "body": { "type": "json", "data": "{\n  \"account_id\": \"account_id\",\n  \"recipient_name\": \"Acme Inc\"\n}" }
+          },
+          "docs": "Creates a physical Lockbox address tied to an Account."
+        }
+      ]
+    },
+    {
+      "info": { "name": "Simulations", "type": "folder" },
+      "items": [
+        {
+          "info": { "name": "Simulate an inbound ACH transfer.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/simulations/inbound_ach_transfers",
+            "body": { "type": "json", "data": "{\n  \"account_number_id\": \"account_number_id\",\n  \"amount\": 1000\n}" }
+          },
+          "docs": "Sandbox-only. Simulates money arriving over ACH."
+        },
+        {
+          "info": { "name": "Simulate a card authorization.", "type": "http" },
+          "http": {
+            "method": "POST",
+            "url": "https://api.increase.com/simulations/card_authorizations",
+            "body": { "type": "json", "data": "{\n  \"card_id\": \"card_id\",\n  \"amount\": 2500\n}" }
+          },
+          "docs": "Sandbox-only. Simulates a merchant authorization, triggering Real-Time Decisions."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

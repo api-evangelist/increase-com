@@ -1,0 +1,357 @@
+{
+  "info": {
+    "name": "Increase API",
+    "description": "Bank-grade payments and financial infrastructure. A single REST API for Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. Base URL https://api.increase.com (production) or https://sandbox.increase.com (sandbox). Authenticate with a Bearer API key. Mutating requests support an Idempotency-Key header.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{apiKey}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://api.increase.com", "type": "string" },
+    { "key": "apiKey", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "List Accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/accounts", "host": ["{{baseUrl}}"], "path": ["accounts"] },
+            "description": "Lists deposit Accounts held at Increase partner banks."
+          }
+        },
+        {
+          "name": "Create an Account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Operating Account\",\n  \"entity_id\": \"entity_id\"\n}" },
+            "url": { "raw": "{{baseUrl}}/accounts", "host": ["{{baseUrl}}"], "path": ["accounts"] },
+            "description": "Creates a new deposit Account."
+          }
+        },
+        {
+          "name": "Retrieve an Account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/accounts/:account_id", "host": ["{{baseUrl}}"], "path": ["accounts", ":account_id"], "variable": [{ "key": "account_id", "value": "" }] },
+            "description": "Retrieves an Account by ID."
+          }
+        },
+        {
+          "name": "Retrieve an Account Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/accounts/:account_id/balance", "host": ["{{baseUrl}}"], "path": ["accounts", ":account_id", "balance"], "variable": [{ "key": "account_id", "value": "" }] },
+            "description": "Returns the current and available balance for an Account."
+          }
+        },
+        {
+          "name": "Close an Account",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/accounts/:account_id/close", "host": ["{{baseUrl}}"], "path": ["accounts", ":account_id", "close"], "variable": [{ "key": "account_id", "value": "" }] },
+            "description": "Closes an Account."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account Numbers",
+      "item": [
+        {
+          "name": "List Account Numbers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/account_numbers", "host": ["{{baseUrl}}"], "path": ["account_numbers"] },
+            "description": "Lists Account Numbers that can receive ACH, wire, and check deposits."
+          }
+        },
+        {
+          "name": "Create an Account Number",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_id\": \"account_id\",\n  \"name\": \"Receivables\"\n}" },
+            "url": { "raw": "{{baseUrl}}/account_numbers", "host": ["{{baseUrl}}"], "path": ["account_numbers"] },
+            "description": "Creates a new Account Number for an Account."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cards",
+      "item": [
+        {
+          "name": "List Cards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/cards", "host": ["{{baseUrl}}"], "path": ["cards"] },
+            "description": "Lists issued virtual and physical Cards."
+          }
+        },
+        {
+          "name": "Create a Card",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_id\": \"account_id\",\n  \"description\": \"Employee card\"\n}" },
+            "url": { "raw": "{{baseUrl}}/cards", "host": ["{{baseUrl}}"], "path": ["cards"] },
+            "description": "Issues a new Card on an Account."
+          }
+        },
+        {
+          "name": "Retrieve sensitive Card details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/cards/:card_id/details", "host": ["{{baseUrl}}"], "path": ["cards", ":card_id", "details"], "variable": [{ "key": "card_id", "value": "" }] },
+            "description": "Returns the PAN, expiration, and CVC for a Card."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Card Payments",
+      "item": [
+        {
+          "name": "List Card Payments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/card_payments", "host": ["{{baseUrl}}"], "path": ["card_payments"] },
+            "description": "Lists card authorization/settlement lifecycles."
+          }
+        },
+        {
+          "name": "Action a Real-Time Decision",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"card_authorization\": { \"decision\": \"approve\" }\n}" },
+            "url": { "raw": "{{baseUrl}}/real_time_decisions/:real_time_decision_id/action", "host": ["{{baseUrl}}"], "path": ["real_time_decisions", ":real_time_decision_id", "action"], "variable": [{ "key": "real_time_decision_id", "value": "" }] },
+            "description": "Approves or declines a card authorization in real time."
+          }
+        }
+      ]
+    },
+    {
+      "name": "ACH Transfers",
+      "item": [
+        {
+          "name": "Create an ACH Transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Idempotency-Key", "value": "{{$guid}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 1000,\n  \"statement_descriptor\": \"Invoice 123\",\n  \"external_account_id\": \"external_account_id\"\n}" },
+            "url": { "raw": "{{baseUrl}}/ach_transfers", "host": ["{{baseUrl}}"], "path": ["ach_transfers"] },
+            "description": "Originates an ACH credit or debit transfer over FedACH."
+          }
+        },
+        {
+          "name": "Approve an ACH Transfer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/ach_transfers/:ach_transfer_id/approve", "host": ["{{baseUrl}}"], "path": ["ach_transfers", ":ach_transfer_id", "approve"], "variable": [{ "key": "ach_transfer_id", "value": "" }] },
+            "description": "Approves a pending ACH Transfer."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wire Transfers",
+      "item": [
+        {
+          "name": "Create a Wire Transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Idempotency-Key", "value": "{{$guid}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 100000,\n  \"message_to_recipient\": \"Wire for services\",\n  \"external_account_id\": \"external_account_id\"\n}" },
+            "url": { "raw": "{{baseUrl}}/wire_transfers", "host": ["{{baseUrl}}"], "path": ["wire_transfers"] },
+            "description": "Sends a domestic Fedwire Wire Transfer."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Real-Time Payments",
+      "item": [
+        {
+          "name": "Create a Real-Time Payments Transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Idempotency-Key", "value": "{{$guid}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"source_account_number_id\": \"account_number_id\",\n  \"amount\": 2500,\n  \"creditor_name\": \"Jane Doe\",\n  \"remittance_information\": \"Payout\",\n  \"external_account_id\": \"external_account_id\"\n}" },
+            "url": { "raw": "{{baseUrl}}/real_time_payments_transfers", "host": ["{{baseUrl}}"], "path": ["real_time_payments_transfers"] },
+            "description": "Sends an instant RTP transfer."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Check Transfers",
+      "item": [
+        {
+          "name": "Create a Check Transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Idempotency-Key", "value": "{{$guid}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 5000,\n  \"fulfillment_method\": \"physical_check\"\n}" },
+            "url": { "raw": "{{baseUrl}}/check_transfers", "host": ["{{baseUrl}}"], "path": ["check_transfers"] },
+            "description": "Prints and mails a physical check."
+          }
+        },
+        {
+          "name": "Create a Check Deposit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_id\": \"account_id\",\n  \"amount\": 5000,\n  \"front_image_file_id\": \"file_id\",\n  \"back_image_file_id\": \"file_id\"\n}" },
+            "url": { "raw": "{{baseUrl}}/check_deposits", "host": ["{{baseUrl}}"], "path": ["check_deposits"] },
+            "description": "Deposits images of a received check."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/transactions?account_id=account_id", "host": ["{{baseUrl}}"], "path": ["transactions"], "query": [{ "key": "account_id", "value": "account_id" }] },
+            "description": "Lists settled Transactions for an Account."
+          }
+        },
+        {
+          "name": "Retrieve a Transaction",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/transactions/:transaction_id", "host": ["{{baseUrl}}"], "path": ["transactions", ":transaction_id"], "variable": [{ "key": "transaction_id", "value": "" }] },
+            "description": "Retrieves a Transaction with its typed source object."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Entities",
+      "item": [
+        {
+          "name": "Create an Entity",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"structure\": \"corporation\",\n  \"corporation\": {}\n}" },
+            "url": { "raw": "{{baseUrl}}/entities", "host": ["{{baseUrl}}"], "path": ["entities"] },
+            "description": "Creates a KYC/KYB Entity that can own Accounts."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/events", "host": ["{{baseUrl}}"], "path": ["events"] },
+            "description": "Lists Events (up to 30 days) for polling or webhook backfill."
+          }
+        },
+        {
+          "name": "Create an Event Subscription",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://example.com/webhooks/increase\"\n}" },
+            "url": { "raw": "{{baseUrl}}/event_subscriptions", "host": ["{{baseUrl}}"], "path": ["event_subscriptions"] },
+            "description": "Registers an HTTPS endpoint to receive signed webhooks."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookkeeping",
+      "item": [
+        {
+          "name": "Create a Bookkeeping Account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Customer Ledger\",\n  \"compliance_category\": \"customer_balance\"\n}" },
+            "url": { "raw": "{{baseUrl}}/bookkeeping_accounts", "host": ["{{baseUrl}}"], "path": ["bookkeeping_accounts"] },
+            "description": "Creates a Bookkeeping Account in the sub-ledger."
+          }
+        },
+        {
+          "name": "Create a Bookkeeping Entry Set",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"entries\": [\n    { \"account_id\": \"bookkeeping_account_a\", \"amount\": 1000 },\n    { \"account_id\": \"bookkeeping_account_b\", \"amount\": -1000 }\n  ]\n}" },
+            "url": { "raw": "{{baseUrl}}/bookkeeping_entry_sets", "host": ["{{baseUrl}}"], "path": ["bookkeeping_entry_sets"] },
+            "description": "Posts a balanced double-entry set transactionally."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lockboxes",
+      "item": [
+        {
+          "name": "Create a Lockbox",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_id\": \"account_id\",\n  \"recipient_name\": \"Acme Inc\"\n}" },
+            "url": { "raw": "{{baseUrl}}/lockboxes", "host": ["{{baseUrl}}"], "path": ["lockboxes"] },
+            "description": "Creates a physical Lockbox address tied to an Account."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Simulations",
+      "item": [
+        {
+          "name": "Simulate an inbound ACH transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"account_number_id\": \"account_number_id\",\n  \"amount\": 1000\n}" },
+            "url": { "raw": "{{baseUrl}}/simulations/inbound_ach_transfers", "host": ["{{baseUrl}}"], "path": ["simulations", "inbound_ach_transfers"] },
+            "description": "Sandbox-only. Simulates money arriving over ACH."
+          }
+        },
+        {
+          "name": "Simulate a card authorization",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"card_id\": \"card_id\",\n  \"amount\": 2500\n}" },
+            "url": { "raw": "{{baseUrl}}/simulations/card_authorizations", "host": ["{{baseUrl}}"], "path": ["simulations", "card_authorizations"] },
+            "description": "Sandbox-only. Simulates a merchant authorization, triggering Real-Time Decisions."
+          }
+        }
+      ]
+    }
+  ]
+}

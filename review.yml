@@ -1,0 +1,185 @@
+aid: increase-com
+name: Increase
+review:
+  question: Does Increase expose a documented public WebSocket API?
+  answer: false
+  date: '2026-07-02'
+  reviewer: API Evangelist
+  asyncapiSpecCreated: false
+  asyncapiScopeNote: |
+    No AsyncAPI document was authored. Increase's own public surface is
+    request/response REST over HTTPS (base https://api.increase.com), and its
+    push mechanism is HTTP webhooks, not a WebSocket or SSE stream. State
+    changes are emitted as Events and delivered to a customer-hosted HTTPS
+    endpoint via Event Subscriptions using the Standard Webhooks specification
+    (HMAC-SHA256 signatures). Because the transport is server-to-endpoint HTTP
+    POST (with a client-pollable List Events fallback), there is no server-push
+    socket transport on Increase's own API to model, and under current scope an
+    outbound-webhook catalog is documented in review.yml rather than as an
+    AsyncAPI channel document.
+findings:
+  summary: |
+    Increase does not publish a documented public WebSocket API. Increase is a
+    bank-grade payments and financial infrastructure platform whose entire
+    public API is REST over HTTPS at https://api.increase.com (sandbox at
+    https://sandbox.increase.com), authenticated with a Bearer API key (OAuth
+    is also supported for platform integrations). Every state change across
+    Accounts, transfers, Cards, Entities, and other resources produces an
+    Event. Events are delivered two ways, neither of which is a WebSocket:
+    (1) push - Event Subscriptions POST signed webhooks to a customer HTTPS
+    endpoint, and (2) pull - the List Events API returns up to 30 days of
+    history with cursor pagination. No realtime, bidirectional, or streaming
+    WebSocket (ws:// or wss://) endpoint is documented anywhere in Increase's
+    API reference, webhooks guide, or SDKs as of the review date. Card
+    authorization approve/decline is handled synchronously via Real-Time
+    Decisions (an Event + REST action), still not a socket.
+  webhookMechanism: |
+    Webhooks follow the Standard Webhooks specification. Each delivery carries
+    three headers: `webhook-id` (the Event ID, usable as an idempotency key),
+    `webhook-timestamp` (Unix seconds, to bound replay), and `webhook-signature`
+    (a `v1,`-prefixed Base64 HMAC-SHA256 of `id.timestamp.body` computed with
+    the subscription's shared secret). Consumers should verify the signature with
+    a constant-time comparison and check the timestamp window (~5 min). Increase
+    expects a 2xx response within 10 seconds; non-2xx, timeouts, and connection
+    errors all trigger retries, up to 8 attempts over roughly 72 hours, after
+    which the Event will not arrive via webhook and must be recovered through the
+    List Events API (30-day retention). Event Subscriptions are
+    environment-specific (sandbox vs production) and can be filtered to a single
+    event category.
+  transports:
+    - protocol: REST
+      scheme: https
+      baseURL: https://api.increase.com
+      documented: true
+      note: Full request/response REST API. Sandbox base is https://sandbox.increase.com.
+    - protocol: Webhook
+      scheme: https
+      documented: true
+      note: Event Subscriptions POST signed (Standard Webhooks HMAC-SHA256) Events to a customer HTTPS endpoint. Server-to-endpoint HTTP, not WebSocket.
+    - protocol: HTTP Poll
+      scheme: https
+      documented: true
+      note: List Events API (GET /events) returns up to 30 days of Events with cursor pagination for backfill / missed-webhook recovery.
+    - protocol: WebSocket
+      scheme: wss
+      documented: false
+      note: No WebSocket endpoint is documented in Increase's API reference, webhooks guide, or SDKs as of the review date.
+    - protocol: SSE
+      scheme: https
+      documented: false
+      note: No Server-Sent Events streaming surface is documented; push is via HTTP webhooks only.
+  endpointsConfirmedRest:
+    - GET    https://api.increase.com/accounts
+    - POST   https://api.increase.com/accounts
+    - GET    https://api.increase.com/accounts/{account_id}
+    - PATCH  https://api.increase.com/accounts/{account_id}
+    - GET    https://api.increase.com/accounts/{account_id}/balance
+    - POST   https://api.increase.com/accounts/{account_id}/close
+    - GET    https://api.increase.com/account_numbers
+    - POST   https://api.increase.com/account_numbers
+    - GET    https://api.increase.com/account_numbers/{account_number_id}
+    - PATCH  https://api.increase.com/account_numbers/{account_number_id}
+    - GET    https://api.increase.com/external_accounts
+    - POST   https://api.increase.com/external_accounts
+    - GET    https://api.increase.com/routing_numbers
+    - GET    https://api.increase.com/cards
+    - POST   https://api.increase.com/cards
+    - GET    https://api.increase.com/cards/{card_id}
+    - PATCH  https://api.increase.com/cards/{card_id}
+    - GET    https://api.increase.com/cards/{card_id}/details
+    - GET    https://api.increase.com/card_payments
+    - GET    https://api.increase.com/card_payments/{card_payment_id}
+    - POST   https://api.increase.com/card_disputes
+    - GET    https://api.increase.com/real_time_decisions/{real_time_decision_id}
+    - POST   https://api.increase.com/real_time_decisions/{real_time_decision_id}/action
+    - GET    https://api.increase.com/ach_transfers
+    - POST   https://api.increase.com/ach_transfers
+    - POST   https://api.increase.com/ach_transfers/{ach_transfer_id}/approve
+    - POST   https://api.increase.com/ach_transfers/{ach_transfer_id}/cancel
+    - POST   https://api.increase.com/ach_prenotifications
+    - POST   https://api.increase.com/inbound_ach_transfers/{inbound_ach_transfer_id}/decline
+    - GET    https://api.increase.com/wire_transfers
+    - POST   https://api.increase.com/wire_transfers
+    - POST   https://api.increase.com/wire_transfers/{wire_transfer_id}/approve
+    - POST   https://api.increase.com/wire_transfers/{wire_transfer_id}/cancel
+    - POST   https://api.increase.com/wire_drawdown_requests
+    - GET    https://api.increase.com/real_time_payments_transfers
+    - POST   https://api.increase.com/real_time_payments_transfers
+    - GET    https://api.increase.com/inbound_real_time_payments_transfers/{inbound_real_time_payments_transfer_id}
+    - GET    https://api.increase.com/check_transfers
+    - POST   https://api.increase.com/check_transfers
+    - POST   https://api.increase.com/check_transfers/{check_transfer_id}/stop_payment
+    - GET    https://api.increase.com/check_deposits
+    - POST   https://api.increase.com/check_deposits
+    - GET    https://api.increase.com/transactions
+    - GET    https://api.increase.com/transactions/{transaction_id}
+    - GET    https://api.increase.com/pending_transactions
+    - GET    https://api.increase.com/declined_transactions/{declined_transaction_id}
+    - GET    https://api.increase.com/entities
+    - POST   https://api.increase.com/entities
+    - POST   https://api.increase.com/entities/{entity_id}/archive
+    - POST   https://api.increase.com/entity_supplemental_documents
+    - GET    https://api.increase.com/events
+    - GET    https://api.increase.com/events/{event_id}
+    - GET    https://api.increase.com/event_subscriptions
+    - POST   https://api.increase.com/event_subscriptions
+    - PATCH  https://api.increase.com/event_subscriptions/{event_subscription_id}
+    - GET    https://api.increase.com/bookkeeping_accounts
+    - POST   https://api.increase.com/bookkeeping_accounts
+    - POST   https://api.increase.com/bookkeeping_entry_sets
+    - GET    https://api.increase.com/bookkeeping_entries/{bookkeeping_entry_id}
+    - GET    https://api.increase.com/digital_card_profiles
+    - GET    https://api.increase.com/physical_card_profiles
+    - GET    https://api.increase.com/digital_wallet_tokens/{digital_wallet_token_id}
+    - GET    https://api.increase.com/lockboxes
+    - POST   https://api.increase.com/lockboxes
+    - GET    https://api.increase.com/inbound_mail_items/{inbound_mail_item_id}
+    - POST   https://api.increase.com/simulations/inbound_ach_transfers
+    - POST   https://api.increase.com/simulations/card_authorizations
+    - POST   https://api.increase.com/simulations/inbound_wire_transfers
+  endpointsModeled:
+    - note: >-
+        The OpenAPI at openapi/increase-com-openapi.yml models a representative,
+        non-exhaustive subset of Increase's large REST surface. The full API also
+        includes FedNow / Swift / Card Push transfers, Card Tokens / Card
+        Validations, Inbound Wire/Check/FedNow variants, Physical Cards, Entity
+        Beneficial Owners and Onboarding Sessions, Programs, Account Statements,
+        Files / File Links / Exports, Groups, OAuth Applications/Connections/Tokens,
+        Intrafi enrollments/balances/exclusions, and a broad Simulations namespace,
+        all confirmed in the public OpenAPI spec and Stainless SDKs but not each
+        enumerated in this document.
+  openSource: |
+    Increase's API is closed (it is a regulated banking platform), but it
+    publishes a public OpenAPI 3.1 specification at
+    https://api.increase.com/openapi.json and maintains open-source,
+    Stainless-generated client SDKs on GitHub (github.com/Increase) for Python,
+    TypeScript, Java, Kotlin, Go, Ruby, PHP, and C#, plus a CLI. This review's
+    endpoint list was grounded in those SDKs' api.md manifests and the public
+    API reference.
+sources:
+  - url: https://increase.com/documentation/api/overview
+    type: APIReference
+    note: REST base URLs (api.increase.com / sandbox.increase.com), Bearer auth, idempotency. No WebSocket.
+  - url: https://increase.com/documentation/webhooks
+    type: Documentation
+    note: HTTP webhooks via Standard Webhooks (HMAC-SHA256); 10s ack, 8 retries over ~72h; List Events fallback (30d). Explicitly no WebSocket/SSE.
+  - url: https://increase.com/documentation/idempotency-keys
+    type: Documentation
+    note: Idempotency-Key header makes retries safe against duplicate money movement.
+  - url: https://api.increase.com/openapi.json
+    type: OpenAPI
+    note: Public OpenAPI 3.1 specification for the Increase API.
+  - url: https://github.com/Increase
+    type: SourceCode
+    note: Stainless-generated SDKs (Python, TypeScript, Java, Kotlin, Go, Ruby, PHP, C#) whose api.md files enumerate every endpoint.
+actions:
+  asyncapiPath: null
+  apisYmlUpdated: true
+  reason: |
+    No WebSocket protocol surface exists. Increase's own public API is
+    request/response REST, and its event delivery is HTTP webhooks (Standard
+    Webhooks HMAC-SHA256) with a List Events polling fallback - server-to-endpoint
+    HTTP, not a bidirectional socket. No AsyncAPI document was created because
+    there is no WebSocket or SSE server-push transport on Increase's own API to
+    model; the webhook mechanism, headers, signing, and retry policy are
+    documented in this review instead.

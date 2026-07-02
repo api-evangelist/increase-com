@@ -1,0 +1,119 @@
+specification: FinOps Framework
+specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
+provider: Increase
+providerId: increase-com
+created: '2026-07-02'
+modified: '2026-07-02'
+reconciled: false
+tags:
+- Payments
+- Banking
+- Financial Infrastructure
+- ACH
+- FinOps
+- Cost Management
+- FOCUS
+description: >-
+  FinOps view of Increase spend. Increase is a bank-grade payments platform billed
+  on a contract, per-item basis: fees attach to the money movement itself - each
+  ACH transfer, wire, real-time payment (RTP / FedNow), check, and card
+  transaction - plus program, account, and related service fees negotiated at
+  volume-based rates. There is no self-service subscription tier; the Sandbox is
+  free and unmetered, so all development and testing carry no cost. Because charges
+  map one-to-one onto payment operations that already carry a business meaning,
+  Increase spend is highly attributable: every fee ties back to a specific
+  Transaction, Account, Entity, and payment rail, which makes cost allocation and
+  unit-economics analysis straightforward.
+notes: >-
+  Per-unit rates are set in the Increase commercial agreement and vary by volume
+  and program; they are not a fixed public rate card. Reconcile actual rates from
+  your agreement and Increase invoices. Sandbox usage is free. Use the List
+  Transactions and List Events APIs (and Exports) to attribute spend to accounts,
+  entities, and rails.
+sources:
+- https://increase.com/
+- https://increase.com/documentation
+- https://increase.com/pricing
+- https://focus.finops.org/focus-specification/v1-3/
+alignedWith:
+  framework: FinOps Foundation Framework
+  frameworkUrl: https://www.finops.org/framework/
+  dataSpec: FOCUS
+  dataSpecVersion: '1.3'
+  dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
+publisherName: Increase
+serviceCategory: Financial Infrastructure and Payments
+billingModel:
+  pricingCategory: Usage-Based
+  billingFrequency: Monthly
+  billingCurrency: USD
+  chargeCategories:
+  - Usage
+  - Purchase
+  - Adjustment
+focusColumns:
+  ServiceName: Increase Payments Platform
+  ServiceCategory: Financial Infrastructure and Payments
+  ProviderName: Increase
+  PublisherName: Increase
+  InvoiceIssuerName: Increase
+  BillingCurrency: USD
+  ChargeCategory: Usage
+  PricingCategory: Usage-Based
+meters:
+- name: ach_transfers
+  description: ACH credit and debit transfers originated over FedACH, billed per transfer.
+  unit: transfers
+  aggregation: sum
+  dimensions:
+  - account
+  - entity
+  - direction
+- name: wire_transfers
+  description: Domestic Fedwire transfers, billed per wire.
+  unit: transfers
+  aggregation: sum
+  dimensions:
+  - account
+  - entity
+- name: real_time_payments
+  description: Instant RTP and FedNow transfers, billed per transfer.
+  unit: transfers
+  aggregation: sum
+  dimensions:
+  - account
+  - entity
+- name: check_transfers
+  description: Printed and mailed (or third-party) checks, billed per check.
+  unit: checks
+  aggregation: sum
+  dimensions:
+  - account
+  - entity
+- name: card_transactions
+  description: Card authorizations and settlements, with interchange terms per the agreement.
+  unit: transactions
+  aggregation: sum
+  dimensions:
+  - account
+  - card
+- name: account_program_fees
+  description: Account, program, and related service fees per the agreement.
+  unit: usd
+  aggregation: sum
+  dimensions:
+  - account
+  - program
+principles:
+- name: Visibility
+  description: Attribute every fee to a specific Transaction, Account, Entity, and payment rail using the List Transactions, List Events, and Exports APIs.
+- name: Allocation
+  description: Map Accounts, Account Numbers, and Bookkeeping Accounts to teams, customers, or cost centers so per-item fees roll up to the right owner.
+- name: Optimization
+  description: Route payments to the cheapest rail that meets the need (ACH vs wire vs RTP), batch where possible, and use the free Sandbox for all testing.
+- name: Accountability
+  description: Reconcile Increase invoices against your own Transaction ledger monthly, and review volume tiers with Increase as usage grows.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

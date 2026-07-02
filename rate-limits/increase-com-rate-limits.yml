@@ -1,0 +1,77 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: Increase
+providerId: increase-com
+created: '2026-07-02'
+modified: '2026-07-02'
+reconciled: false
+tags:
+- Payments
+- Banking
+- ACH
+- Rate Limiting
+- Quotas
+description: >-
+  Increase applies per-API-key rate limits to protect the platform, and returns
+  HTTP 429 (Too Many Requests) when a key exceeds its allowance. Increase does not
+  publish a single fixed public number for the request-rate ceiling; the effective
+  limit is set per environment and per customer, and can be raised for production
+  workloads by contacting Increase. The API is designed to be called safely at
+  scale: every mutating request accepts an `Idempotency-Key` header so retries
+  after a 429 or network error do not create duplicate transfers, and all list
+  endpoints use cursor-based pagination (limit 1-100 per page, default 100) rather
+  than offset paging. Webhook delivery has its own operational limits: Increase
+  expects a 2xx response within 10 seconds and retries up to 8 times over roughly
+  72 hours before giving up, after which the List Events API (30-day retention) is
+  the recovery path.
+notes: >-
+  Numeric per-second / per-minute request ceilings are not published as a fixed
+  public figure and are tuned per key and environment. Handle 429 responses with
+  exponential backoff and jitter, and rely on idempotency keys for safe retries.
+  Confirm any elevated production limits with Increase support.
+sources:
+- https://increase.com/documentation/api/overview
+- https://increase.com/documentation/idempotency-keys
+- https://increase.com/documentation/pagination
+- https://increase.com/documentation/webhooks
+responseCodes:
+  throttled: 429
+limits:
+- name: API Requests
+  scope: api_key
+  metric: requests
+  limit: not published (per-key, tunable)
+  notes: Increase rate-limits per API key and returns 429 when exceeded; production limits can be raised on request.
+- name: List Page Size
+  scope: request
+  metric: records
+  limit: 100
+  notes: Cursor-paginated list endpoints return 1-100 items per page (default 100).
+- name: Webhook Response Window
+  scope: endpoint
+  metric: seconds
+  limit: 10
+  notes: Your endpoint must return a 2xx status within 10 seconds or the delivery counts as failed.
+- name: Webhook Retry Attempts
+  scope: event
+  metric: attempts
+  limit: 8
+  notes: Failed webhook deliveries are retried up to 8 times over ~72 hours, then abandoned.
+- name: Events Retention
+  scope: account
+  metric: days
+  limit: 30
+  notes: The List Events API retains events for 30 days for polling / backfill after missed webhooks.
+policies:
+- name: Idempotency
+  description: Mutating requests accept an Idempotency-Key header so retries after a 429 or error are safe and never duplicate money movement.
+- name: Backoff Strategy
+  description: Clients should implement exponential backoff with jitter and honor 429 responses rather than retrying tightly.
+- name: Cursor Pagination
+  description: List endpoints use opaque cursors instead of offsets, keeping large sweeps stable and bounded per page.
+- name: Webhook Plus Polling
+  description: Because webhooks have a bounded ~72-hour retry window, Increase recommends combining Event Subscriptions with periodic List Events polling for durable synchronization.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

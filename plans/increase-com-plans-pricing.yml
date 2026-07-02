@@ -1,0 +1,128 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: Increase
+providerId: increase-com
+created: '2026-07-02'
+modified: '2026-07-02'
+reconciled: false
+tags:
+- Payments
+- Banking
+- Financial Infrastructure
+- ACH
+- Wire Transfers
+- Plans
+description: >-
+  Increase does not sell self-service subscription tiers. Access is contract-based:
+  you apply, complete underwriting and KYC with Increase and its partner banks
+  (currently First Internet Bank of Indiana and Grasshopper Bank), and sign an
+  agreement before moving real money in production. Pricing is per-item / per-unit
+  on the money movement itself - a fee per ACH transfer, per wire, per real-time
+  payment, per check, per card transaction, plus program and account-related fees -
+  negotiated based on volume. A full-featured Sandbox environment is free and
+  requires no contract, so the API surface can be built against at no cost before
+  going live. Increase publicly positions itself as transparent, usage-based
+  pricing with no minimums for many customers, but exact per-unit rates are set in
+  the commercial agreement and are not published as a fixed public rate card.
+notes: >-
+  Per-transaction rates (ACH, wire, RTP/FedNow, check, card interchange sharing,
+  account fees) are established in your Increase agreement and vary by volume and
+  program. Verify current terms with Increase sales and in the bank account
+  agreement during reconciliation. Sandbox is free and unmetered for development.
+sources:
+- https://increase.com/
+- https://increase.com/documentation
+- https://increase.com/pricing
+- https://increase.com/first-internet-bank-terms
+plans:
+- id: increase-sandbox
+  name: Sandbox
+  type: free
+  description: >-
+    Free, self-service sandbox environment (https://sandbox.increase.com) with the
+    complete API surface and Simulation endpoints for deterministic testing. No
+    contract, no real money, no fees.
+  entries:
+  - label: Sandbox API Access
+    name: sandbox_access
+    type: usage
+    metric: requests
+    limit: -1
+    timeFrame: month
+    geo: us
+    unit: 1
+    price: free
+    userMultiplied: false
+  elements:
+  - name: Full API Surface
+  - name: Simulation Endpoints
+  - name: Webhooks / Event Subscriptions
+- id: increase-production
+  name: Production (Contract)
+  type: enterprise
+  description: >-
+    Live money movement through Increase's partner banks after underwriting, KYC/KYB,
+    and signing a commercial agreement. Billing is per-item on the payments you
+    originate and receive (ACH, wire, RTP, FedNow, check, card), plus program and
+    account fees, at negotiated volume-based rates.
+  entries:
+  - label: ACH Transfer
+    name: ach_transfer
+    type: usage
+    metric: transfers
+    limit: -1
+    timeFrame: month
+    geo: us
+    unit: 1
+    price: per-transfer fee (contract-based)
+    userMultiplied: false
+  - label: Wire Transfer
+    name: wire_transfer
+    type: usage
+    metric: transfers
+    limit: -1
+    timeFrame: month
+    geo: us
+    unit: 1
+    price: per-wire fee (contract-based)
+    userMultiplied: false
+  - label: Real-Time Payment / FedNow
+    name: real_time_payment
+    type: usage
+    metric: transfers
+    limit: -1
+    timeFrame: month
+    geo: us
+    unit: 1
+    price: per-transfer fee (contract-based)
+    userMultiplied: false
+  - label: Check Transfer
+    name: check_transfer
+    type: usage
+    metric: checks
+    limit: -1
+    timeFrame: month
+    geo: us
+    unit: 1
+    price: per-check fee (contract-based)
+    userMultiplied: false
+  - label: Card Transaction
+    name: card_transaction
+    type: usage
+    metric: transactions
+    limit: -1
+    timeFrame: month
+    geo: us
+    unit: 1
+    price: per-transaction / interchange terms (contract-based)
+    userMultiplied: false
+  elements:
+  - name: Volume-Based Pricing
+  - name: Partner Bank Accounts
+  - name: KYC / KYB Underwriting
+  - name: Dedicated Support
+  - name: SLAs
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com
