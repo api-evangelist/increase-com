@@ -291,6 +291,12 @@ apis:
     authorizations, advance transfer states, and generate statements so you can test
     every code path without real money.
 common:
+- type: VulnerabilityDisclosure
+  url: security/increase-com-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/increase-com-domain-security.yml
+- type: Authentication
+  url: authentication/increase-com-authentication.yml
 - type: GitHubOrganization
   url: https://github.com/Increase
 - type: LinkedIn
@@ -305,6 +311,8 @@ common:
   url: rate-limits/increase-com-rate-limits.yml
 - type: FinOps
   url: finops/increase-com-finops.yml
+- type: Blog
+  url: https://increase.com/updates.xml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
