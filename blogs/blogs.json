@@ -1,0 +1,13 @@
+{
+  "repo": "increase-com",
+  "feeds": [
+    {
+      "source": "https://increase.com/blog",
+      "feed_url": "https://increase.com/updates.xml",
+      "title": "Increase Updates",
+      "saved": 16
+    }
+  ],
+  "fetched": "2026-07-11T11:43:46Z",
+  "post_count": 41
+}
