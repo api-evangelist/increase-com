@@ -291,6 +291,8 @@ apis:
     authorizations, advance transfer states, and generate statements so you can test
     every code path without real money.
 common:
+- type: AgenticAccess
+  url: agentic-access/increase-com-agentic-access.yml
 - type: VulnerabilityDisclosure
   url: security/increase-com-vulnerability-disclosure.yml
 - type: DomainSecurity
