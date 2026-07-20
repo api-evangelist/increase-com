@@ -8,7 +8,7 @@ schemes:
 - name: bearerAuth
   type: http
   scheme: bearer
-  description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped
+  description: 'Increase API key passed as `Authorization: Bearer [example key]`. Keys are environment-scoped
     (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'
   sources:
   - openapi/increase-com-openapi.yml
