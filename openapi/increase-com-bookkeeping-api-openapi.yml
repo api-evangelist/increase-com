@@ -1,0 +1,230 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers Bookkeeping API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Bookkeeping
+  description: Double-entry sub-ledger built on Increase money movement.
+paths:
+  /bookkeeping_accounts:
+    get:
+      operationId: listBookkeepingAccounts
+      tags:
+      - Bookkeeping
+      summary: List Bookkeeping Accounts
+      responses:
+        '200':
+          description: A list of Bookkeeping Accounts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BookkeepingAccount'
+    post:
+      operationId: createBookkeepingAccount
+      tags:
+      - Bookkeeping
+      summary: Create a Bookkeeping Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                account_id:
+                  type: string
+                entity_id:
+                  type: string
+                compliance_category:
+                  type: string
+                  enum:
+                  - commingled_cash
+                  - customer_balance
+      responses:
+        '200':
+          description: The created Bookkeeping Account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookkeepingAccount'
+  /bookkeeping_accounts/{bookkeeping_account_id}:
+    parameters:
+    - name: bookkeeping_account_id
+      in: path
+      required: true
+      schema:
+        type: string
+    patch:
+      operationId: updateBookkeepingAccount
+      tags:
+      - Bookkeeping
+      summary: Update a Bookkeeping Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: The updated Bookkeeping Account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookkeepingAccount'
+  /bookkeeping_accounts/{bookkeeping_account_id}/balance:
+    parameters:
+    - name: bookkeeping_account_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveBookkeepingBalance
+      tags:
+      - Bookkeeping
+      summary: Retrieve a Bookkeeping Account Balance
+      responses:
+        '200':
+          description: The Bookkeeping Account balance.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: integer
+  /bookkeeping_entry_sets:
+    get:
+      operationId: listBookkeepingEntrySets
+      tags:
+      - Bookkeeping
+      summary: List Bookkeeping Entry Sets
+      responses:
+        '200':
+          description: A list of Bookkeeping Entry Sets.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+    post:
+      operationId: createBookkeepingEntrySet
+      tags:
+      - Bookkeeping
+      summary: Create a Bookkeeping Entry Set
+      description: Post a balanced set of double-entry Bookkeeping Entries transactionally.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - entries
+              properties:
+                date:
+                  type: string
+                  format: date-time
+                transaction_id:
+                  type: string
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - account_id
+                    - amount
+                    properties:
+                      account_id:
+                        type: string
+                      amount:
+                        type: integer
+      responses:
+        '200':
+          description: The created Bookkeeping Entry Set.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /bookkeeping_entries/{bookkeeping_entry_id}:
+    parameters:
+    - name: bookkeeping_entry_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveBookkeepingEntry
+      tags:
+      - Bookkeeping
+      summary: Retrieve a Bookkeeping Entry
+      responses:
+        '200':
+          description: The Bookkeeping Entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  schemas:
+    BookkeepingAccount:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        account_id:
+          type: string
+          nullable: true
+        entity_id:
+          type: string
+          nullable: true
+        compliance_category:
+          type: string
+          nullable: true
+          enum:
+          - commingled_cash
+          - customer_balance
+        type:
+          type: string
+          example: bookkeeping_account
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

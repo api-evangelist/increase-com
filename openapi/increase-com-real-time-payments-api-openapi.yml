@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers Real-Time Payments API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Real-Time Payments
+  description: Instant RTP transfers, inbound and outbound.
+paths:
+  /real_time_payments_transfers:
+    get:
+      operationId: listRealTimePaymentsTransfers
+      tags:
+      - Real-Time Payments
+      summary: List Real-Time Payments Transfers
+      responses:
+        '200':
+          description: A list of Real-Time Payments Transfers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RealTimePaymentsTransfer'
+    post:
+      operationId: createRealTimePaymentsTransfer
+      tags:
+      - Real-Time Payments
+      summary: Create a Real-Time Payments Transfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - source_account_number_id
+              - amount
+              - creditor_name
+              - remittance_information
+              properties:
+                source_account_number_id:
+                  type: string
+                amount:
+                  type: integer
+                creditor_name:
+                  type: string
+                remittance_information:
+                  type: string
+                destination_account_number:
+                  type: string
+                destination_routing_number:
+                  type: string
+                external_account_id:
+                  type: string
+      responses:
+        '200':
+          description: The created Real-Time Payments Transfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealTimePaymentsTransfer'
+  /real_time_payments_transfers/{real_time_payments_transfer_id}:
+    parameters:
+    - name: real_time_payments_transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveRealTimePaymentsTransfer
+      tags:
+      - Real-Time Payments
+      summary: Retrieve a Real-Time Payments Transfer
+      responses:
+        '200':
+          description: The Real-Time Payments Transfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealTimePaymentsTransfer'
+  /inbound_real_time_payments_transfers/{inbound_real_time_payments_transfer_id}:
+    parameters:
+    - name: inbound_real_time_payments_transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveInboundRealTimePaymentsTransfer
+      tags:
+      - Real-Time Payments
+      summary: Retrieve an Inbound Real-Time Payments Transfer
+      responses:
+        '200':
+          description: The Inbound Real-Time Payments Transfer.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  schemas:
+    RealTimePaymentsTransfer:
+      type: object
+      properties:
+        id:
+          type: string
+        source_account_number_id:
+          type: string
+        amount:
+          type: integer
+        creditor_name:
+          type: string
+        remittance_information:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending_approval
+          - pending_submission
+          - submitted
+          - complete
+          - rejected
+          - canceled
+        type:
+          type: string
+          example: real_time_payments_transfer
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

@@ -1,0 +1,178 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers External Accounts API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: External Accounts
+  description: Counterparty bank accounts you send to or debit.
+paths:
+  /external_accounts:
+    get:
+      operationId: listExternalAccounts
+      tags:
+      - External Accounts
+      summary: List External Accounts
+      responses:
+        '200':
+          description: A list of External Accounts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExternalAccount'
+    post:
+      operationId: createExternalAccount
+      tags:
+      - External Accounts
+      summary: Create an External Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - routing_number
+              - account_number
+              - description
+              properties:
+                routing_number:
+                  type: string
+                account_number:
+                  type: string
+                description:
+                  type: string
+                funding:
+                  type: string
+                  enum:
+                  - checking
+                  - savings
+                  - other
+      responses:
+        '200':
+          description: The created External Account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAccount'
+  /external_accounts/{external_account_id}:
+    parameters:
+    - name: external_account_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveExternalAccount
+      tags:
+      - External Accounts
+      summary: Retrieve an External Account
+      responses:
+        '200':
+          description: The External Account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAccount'
+    patch:
+      operationId: updateExternalAccount
+      tags:
+      - External Accounts
+      summary: Update an External Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                  - active
+                  - archived
+      responses:
+        '200':
+          description: The updated External Account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAccount'
+  /routing_numbers:
+    get:
+      operationId: listRoutingNumbers
+      tags:
+      - External Accounts
+      summary: List Routing Numbers
+      description: Look up which real-time payment rails a given routing number supports.
+      parameters:
+      - name: routing_number
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Routing number details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+components:
+  schemas:
+    ExternalAccount:
+      type: object
+      properties:
+        id:
+          type: string
+        routing_number:
+          type: string
+        account_number:
+          type: string
+        description:
+          type: string
+        funding:
+          type: string
+          enum:
+          - checking
+          - savings
+          - other
+        status:
+          type: string
+          enum:
+          - active
+          - archived
+        type:
+          type: string
+          example: external_account
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

@@ -1,0 +1,202 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers Card Payments API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Card Payments
+  description: Card authorization and settlement lifecycle.
+paths:
+  /card_payments:
+    get:
+      operationId: listCardPayments
+      tags:
+      - Card Payments
+      summary: List Card Payments
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: A list of Card Payments.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CardPayment'
+  /card_payments/{card_payment_id}:
+    parameters:
+    - name: card_payment_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveCardPayment
+      tags:
+      - Card Payments
+      summary: Retrieve a Card Payment
+      responses:
+        '200':
+          description: The Card Payment with its full element timeline.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardPayment'
+  /card_disputes:
+    get:
+      operationId: listCardDisputes
+      tags:
+      - Card Payments
+      summary: List Card Disputes
+      responses:
+        '200':
+          description: A list of Card Disputes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+    post:
+      operationId: createCardDispute
+      tags:
+      - Card Payments
+      summary: Create a Card Dispute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - disputed_transaction_id
+              - explanation
+              properties:
+                disputed_transaction_id:
+                  type: string
+                explanation:
+                  type: string
+      responses:
+        '200':
+          description: The created Card Dispute.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /real_time_decisions/{real_time_decision_id}:
+    parameters:
+    - name: real_time_decision_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveRealTimeDecision
+      tags:
+      - Card Payments
+      summary: Retrieve a Real-Time Decision
+      responses:
+        '200':
+          description: The Real-Time Decision awaiting your action.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /real_time_decisions/{real_time_decision_id}/action:
+    parameters:
+    - name: real_time_decision_id
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: actionRealTimeDecision
+      tags:
+      - Card Payments
+      summary: Action a Real-Time Decision
+      description: Approve or decline a card authorization, digital wallet token provisioning, or digital wallet authentication in real time.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: The updated Real-Time Decision.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Number of results to return per page (1-100, default 100).
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Return the page of results starting after this cursor.
+      schema:
+        type: string
+  schemas:
+    CardPayment:
+      type: object
+      properties:
+        id:
+          type: string
+        account_id:
+          type: string
+        card_id:
+          type: string
+        state:
+          type: object
+          additionalProperties: true
+        elements:
+          type: array
+          description: The ordered lifecycle events (authorization, settlement, refund, reversal, etc.).
+          items:
+            type: object
+            additionalProperties: true
+        type:
+          type: string
+          example: card_payment
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

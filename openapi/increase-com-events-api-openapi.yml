@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers Events API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Events
+  description: Events and webhook Event Subscriptions.
+paths:
+  /events:
+    get:
+      operationId: listEvents
+      tags:
+      - Events
+      summary: List Events
+      description: Poll or backfill the Events emitted by state changes across every resource. Retains up to 30 days of history.
+      parameters:
+      - name: category
+        in: query
+        schema:
+          type: string
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: A list of Events.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+  /events/{event_id}:
+    parameters:
+    - name: event_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveEvent
+      tags:
+      - Events
+      summary: Retrieve an Event
+      responses:
+        '200':
+          description: The Event.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /event_subscriptions:
+    get:
+      operationId: listEventSubscriptions
+      tags:
+      - Events
+      summary: List Event Subscriptions
+      responses:
+        '200':
+          description: A list of Event Subscriptions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventSubscription'
+    post:
+      operationId: createEventSubscription
+      tags:
+      - Events
+      summary: Create an Event Subscription
+      description: Register an HTTPS endpoint to receive signed webhooks for Events, optionally filtered to a category.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - url
+              properties:
+                url:
+                  type: string
+                  format: uri
+                shared_secret:
+                  type: string
+                selected_event_category:
+                  type: string
+      responses:
+        '200':
+          description: The created Event Subscription.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubscription'
+  /event_subscriptions/{event_subscription_id}:
+    parameters:
+    - name: event_subscription_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveEventSubscription
+      tags:
+      - Events
+      summary: Retrieve an Event Subscription
+      responses:
+        '200':
+          description: The Event Subscription.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubscription'
+    patch:
+      operationId: updateEventSubscription
+      tags:
+      - Events
+      summary: Update an Event Subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                  - active
+                  - disabled
+                  - deleted
+      responses:
+        '200':
+          description: The updated Event Subscription.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventSubscription'
+components:
+  schemas:
+    EventSubscription:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+          format: uri
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+          - deleted
+          - requires_attention
+        selected_event_category:
+          type: string
+          nullable: true
+        type:
+          type: string
+          example: event_subscription
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+          description: e.g. transaction.created
+          ach_transfer.updated: null
+          account.created: null
+        associated_object_id:
+          type: string
+        associated_object_type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        type:
+          type: string
+          example: event
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Return the page of results starting after this cursor.
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Number of results to return per page (1-100, default 100).
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

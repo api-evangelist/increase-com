@@ -1,0 +1,197 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers Cards API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Cards
+  description: Virtual and physical commercial cards.
+paths:
+  /cards:
+    get:
+      operationId: listCards
+      tags:
+      - Cards
+      summary: List Cards
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: A list of Cards.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Card'
+    post:
+      operationId: createCard
+      tags:
+      - Cards
+      summary: Create a Card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - account_id
+              properties:
+                account_id:
+                  type: string
+                description:
+                  type: string
+                entity_id:
+                  type: string
+      responses:
+        '200':
+          description: The created Card.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+  /cards/{card_id}:
+    parameters:
+    - name: card_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveCard
+      tags:
+      - Cards
+      summary: Retrieve a Card
+      responses:
+        '200':
+          description: The Card.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+    patch:
+      operationId: updateCard
+      tags:
+      - Cards
+      summary: Update a Card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                  - active
+                  - disabled
+                  - canceled
+      responses:
+        '200':
+          description: The updated Card.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+  /cards/{card_id}/details:
+    parameters:
+    - name: card_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveCardDetails
+      tags:
+      - Cards
+      summary: Retrieve sensitive Card details
+      description: Returns the PAN, expiration, and CVC for a Card. Restricted; typically retrieved via a secure iframe.
+      responses:
+        '200':
+          description: Sensitive card details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  card_id:
+                    type: string
+                  primary_account_number:
+                    type: string
+                  expiration_month:
+                    type: integer
+                  expiration_year:
+                    type: integer
+                  verification_code:
+                    type: string
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Number of results to return per page (1-100, default 100).
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Return the page of results starting after this cursor.
+      schema:
+        type: string
+  schemas:
+    Card:
+      type: object
+      properties:
+        id:
+          type: string
+        account_id:
+          type: string
+        description:
+          type: string
+          nullable: true
+        last4:
+          type: string
+        expiration_month:
+          type: integer
+        expiration_year:
+          type: integer
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+          - canceled
+        type:
+          type: string
+          example: card
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

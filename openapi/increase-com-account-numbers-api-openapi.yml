@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Account Numbers
+  description: Routing and account number pairs that can receive funds.
+paths:
+  /account_numbers:
+    get:
+      operationId: listAccountNumbers
+      tags:
+      - Account Numbers
+      summary: List Account Numbers
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: A list of Account Numbers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountNumberList'
+    post:
+      operationId: createAccountNumber
+      tags:
+      - Account Numbers
+      summary: Create an Account Number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - account_id
+              - name
+              properties:
+                account_id:
+                  type: string
+                name:
+                  type: string
+      responses:
+        '200':
+          description: The created Account Number.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountNumber'
+  /account_numbers/{account_number_id}:
+    parameters:
+    - name: account_number_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveAccountNumber
+      tags:
+      - Account Numbers
+      summary: Retrieve an Account Number
+      responses:
+        '200':
+          description: The Account Number.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountNumber'
+    patch:
+      operationId: updateAccountNumber
+      tags:
+      - Account Numbers
+      summary: Update an Account Number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                  - active
+                  - disabled
+                  - canceled
+      responses:
+        '200':
+          description: The updated Account Number.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountNumber'
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Number of results to return per page (1-100, default 100).
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Return the page of results starting after this cursor.
+      schema:
+        type: string
+  schemas:
+    AccountNumber:
+      type: object
+      properties:
+        id:
+          type: string
+        account_id:
+          type: string
+        account_number:
+          type: string
+        routing_number:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - disabled
+          - canceled
+        type:
+          type: string
+          example: account_number
+    AccountNumberList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountNumber'
+        next_cursor:
+          type: string
+          nullable: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

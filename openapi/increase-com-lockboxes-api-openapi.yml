@@ -1,0 +1,142 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers Lockboxes API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Lockboxes
+  description: Physical lockbox addresses and inbound mail.
+paths:
+  /lockboxes:
+    get:
+      operationId: listLockboxes
+      tags:
+      - Lockboxes
+      summary: List Lockboxes
+      responses:
+        '200':
+          description: A list of Lockboxes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+    post:
+      operationId: createLockbox
+      tags:
+      - Lockboxes
+      summary: Create a Lockbox
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - account_id
+              properties:
+                account_id:
+                  type: string
+                description:
+                  type: string
+                recipient_name:
+                  type: string
+      responses:
+        '200':
+          description: The created Lockbox.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /lockboxes/{lockbox_id}:
+    parameters:
+    - name: lockbox_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveLockbox
+      tags:
+      - Lockboxes
+      summary: Retrieve a Lockbox
+      responses:
+        '200':
+          description: The Lockbox.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      operationId: updateLockbox
+      tags:
+      - Lockboxes
+      summary: Update a Lockbox
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                  - active
+                  - inactive
+      responses:
+        '200':
+          description: The updated Lockbox.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /inbound_mail_items/{inbound_mail_item_id}:
+    parameters:
+    - name: inbound_mail_item_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveInboundMailItem
+      tags:
+      - Lockboxes
+      summary: Retrieve an Inbound Mail Item
+      responses:
+        '200':
+          description: The Inbound Mail Item scanned at a Lockbox.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

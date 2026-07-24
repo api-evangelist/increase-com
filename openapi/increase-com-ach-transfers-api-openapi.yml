@@ -1,0 +1,247 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers ACH Transfers API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: ACH Transfers
+  description: FedACH credit and debit transfers, inbound and outbound.
+paths:
+  /ach_transfers:
+    get:
+      operationId: listACHTransfers
+      tags:
+      - ACH Transfers
+      summary: List ACH Transfers
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: A list of ACH Transfers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ACHTransfer'
+    post:
+      operationId: createACHTransfer
+      tags:
+      - ACH Transfers
+      summary: Create an ACH Transfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - account_id
+              - amount
+              - statement_descriptor
+              properties:
+                account_id:
+                  type: string
+                amount:
+                  type: integer
+                  description: Cents. Positive credits the destination
+                  negative debits it.: null
+                statement_descriptor:
+                  type: string
+                account_number:
+                  type: string
+                routing_number:
+                  type: string
+                external_account_id:
+                  type: string
+                funding:
+                  type: string
+                  enum:
+                  - checking
+                  - savings
+      responses:
+        '200':
+          description: The created ACH Transfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACHTransfer'
+  /ach_transfers/{ach_transfer_id}:
+    parameters:
+    - name: ach_transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+    get:
+      operationId: retrieveACHTransfer
+      tags:
+      - ACH Transfers
+      summary: Retrieve an ACH Transfer
+      responses:
+        '200':
+          description: The ACH Transfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACHTransfer'
+  /ach_transfers/{ach_transfer_id}/approve:
+    parameters:
+    - name: ach_transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: approveACHTransfer
+      tags:
+      - ACH Transfers
+      summary: Approve an ACH Transfer
+      responses:
+        '200':
+          description: The approved ACH Transfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACHTransfer'
+  /ach_transfers/{ach_transfer_id}/cancel:
+    parameters:
+    - name: ach_transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: cancelACHTransfer
+      tags:
+      - ACH Transfers
+      summary: Cancel a pending ACH Transfer
+      responses:
+        '200':
+          description: The canceled ACH Transfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACHTransfer'
+  /inbound_ach_transfers/{inbound_ach_transfer_id}/decline:
+    parameters:
+    - name: inbound_ach_transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+    post:
+      operationId: declineInboundACHTransfer
+      tags:
+      - ACH Transfers
+      summary: Decline an Inbound ACH Transfer
+      responses:
+        '200':
+          description: The declined Inbound ACH Transfer.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /ach_prenotifications:
+    post:
+      operationId: createACHPrenotification
+      tags:
+      - ACH Transfers
+      summary: Create an ACH Prenotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - account_id
+              - account_number
+              - routing_number
+              properties:
+                account_id:
+                  type: string
+                account_number:
+                  type: string
+                routing_number:
+                  type: string
+      responses:
+        '200':
+          description: The created ACH Prenotification.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Number of results to return per page (1-100, default 100).
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Return the page of results starting after this cursor.
+      schema:
+        type: string
+  schemas:
+    ACHTransfer:
+      type: object
+      properties:
+        id:
+          type: string
+        account_id:
+          type: string
+        amount:
+          type: integer
+        currency:
+          type: string
+          example: USD
+        statement_descriptor:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending_approval
+          - pending_submission
+          - submitted
+          - returned
+          - rejected
+          - canceled
+        routing_number:
+          type: string
+          nullable: true
+        type:
+          type: string
+          example: ach_transfer
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'

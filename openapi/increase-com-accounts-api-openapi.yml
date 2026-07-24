@@ -1,0 +1,237 @@
+openapi: 3.1.0
+info:
+  title: Increase Account Numbers Accounts API
+  description: Increase is a bank-grade payments and financial infrastructure platform that exposes a single REST API for moving and holding money in the United States. This document models the primary resources of the Increase API - Accounts, Account Numbers, Cards, Card Payments, ACH / Wire / Real-Time Payments / Check transfers, Transactions, Entities, Events and webhooks, Bookkeeping, Card Profiles and Digital Wallets, Lockboxes, and Simulations. It is grounded in Increase's public OpenAPI 3.1 spec (https://api.increase.com/openapi.json) and the Stainless-generated SDKs. Authentication is a Bearer API key. All endpoints are HTTPS REST; state changes are delivered as Events over HTTP webhooks (no WebSocket surface). Requests support idempotency via the `Idempotency-Key` header. This is a representative, not exhaustive, subset of the full API.
+  version: 0.0.1
+  contact:
+    name: Increase
+    url: https://increase.com
+  license:
+    name: Increase Documentation
+    url: https://increase.com/documentation
+servers:
+- url: https://api.increase.com
+  description: Production
+- url: https://sandbox.increase.com
+  description: Sandbox
+security:
+- bearerAuth: []
+tags:
+- name: Accounts
+  description: Deposit accounts held at Increase partner banks.
+paths:
+  /accounts:
+    get:
+      operationId: listAccounts
+      tags:
+      - Accounts
+      summary: List Accounts
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          $ref: '#/components/responses/AccountList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      operationId: createAccount
+      tags:
+      - Accounts
+      summary: Create an Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                entity_id:
+                  type: string
+                program_id:
+                  type: string
+                informational_entity_id:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Account'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /accounts/{account_id}:
+    parameters:
+    - $ref: '#/components/parameters/AccountId'
+    get:
+      operationId: retrieveAccount
+      tags:
+      - Accounts
+      summary: Retrieve an Account
+      responses:
+        '200':
+          $ref: '#/components/responses/Account'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateAccount
+      tags:
+      - Accounts
+      summary: Update an Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Account'
+  /accounts/{account_id}/balance:
+    parameters:
+    - $ref: '#/components/parameters/AccountId'
+    get:
+      operationId: retrieveAccountBalance
+      tags:
+      - Accounts
+      summary: Retrieve an Account Balance
+      responses:
+        '200':
+          description: Account balance.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current_balance:
+                    type: integer
+                  available_balance:
+                    type: integer
+  /accounts/{account_id}/close:
+    parameters:
+    - $ref: '#/components/parameters/AccountId'
+    post:
+      operationId: closeAccount
+      tags:
+      - Accounts
+      summary: Close an Account
+      responses:
+        '200':
+          $ref: '#/components/responses/Account'
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Number of results to return per page (1-100, default 100).
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 100
+    AccountId:
+      name: account_id
+      in: path
+      required: true
+      description: The identifier of the Account.
+      schema:
+        type: string
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Return the page of results starting after this cursor.
+      schema:
+        type: string
+  responses:
+    ValidationError:
+      description: The request failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Missing or invalid API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    AccountList:
+      description: A list of Accounts.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+              next_cursor:
+                type: string
+                nullable: true
+    Account:
+      description: An Account.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Account'
+    NotFound:
+      description: The requested object was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+          nullable: true
+        status:
+          type: integer
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        entity_id:
+          type: string
+          nullable: true
+        program_id:
+          type: string
+        currency:
+          type: string
+          example: USD
+        status:
+          type: string
+          enum:
+          - open
+          - closed
+        bank:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        type:
+          type: string
+          example: account
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Increase API key passed as `Authorization: Bearer YOUR_API_KEY`. Keys are environment-scoped (production vs sandbox). OAuth is also supported for platform / Increase-for-platforms integrations.'
